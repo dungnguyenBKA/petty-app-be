@@ -1,0 +1,6 @@
+node_modules/
+.idea/
+
+# comment file .env just for learning =))
+#.env
+
