@@ -1,6 +1,6 @@
-export default function createResponse(data, message = "") {
+export default function createResponse(message = "", data = undefined) {
     return {
-        data: data,
-        message: message
+        message,
+        data
     }
 }
