@@ -2,21 +2,20 @@ import express from 'express'
 import 'dotenv/config'
 import mongoose from 'mongoose'
 import authRoute from "./src/routes/authRoute.js";
-import homeRoute from "./src/routes/homeRoute.js";
+import postRoute from "./src/routes/postRoute.js";
+
+// await connectDb()
 
 const app = express()
 app.use(express.json())
 
 app.use("/api/auth", authRoute)
-app.use("/api/home", homeRoute)
+app.use("/api/post", postRoute)
 
 const PORT = process.env.PORT || 5000
-
 app.listen(PORT, () => {
     console.log(`[${process.env.DB_USERNAME}]: Server start at port ${PORT}`)
 })
-
-await connectDb()
 
 async function connectDb() {
     try {
