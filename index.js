@@ -4,7 +4,7 @@ import mongoose from 'mongoose'
 import authRoute from "./src/routes/authRoute.js";
 import postRoute from "./src/routes/postRoute.js";
 
-// await connectDb()
+await connectDb()
 
 const app = express()
 app.use(express.json())
