@@ -12,6 +12,8 @@ import {v4} from 'uuid';
 
 import bcrypt from "bcrypt"
 import UserModel from "../models/UserModel.js";
+import _ from "lodash";
+import {pickPropertyUser} from "../utils/utils.js";
 
 const router = express.Router()
 
@@ -42,7 +44,8 @@ router.post('/login', async (req, res) => {
         if (await bcrypt.compare(password, user.pass)) {
             const token = jwt.sign(user.id, process.env.SECRET_KEY)
             res.json(createResponse(successMessage, {
-                token
+                token,
+                user: pickPropertyUser(user)
             }))
             return;
         }
@@ -85,7 +88,8 @@ router.post('/register', async (req, res) => {
 
         const token = jwt.sign(newUser.id, process.env.SECRET_KEY)
         res.json(createResponse(successMessage, {
-            token
+            token,
+            user: pickPropertyUser(newUser)
         }))
     })
 })
