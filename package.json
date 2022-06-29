@@ -9,6 +9,7 @@
     "lodash": "^4.17.21",
     "mongoose": "^6.3.2",
     "nodemon": "^2.0.16",
+    "pusher": "^5.1.0-beta",
     "uuid": "^8.3.2"
   },
   "name": "learn",

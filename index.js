@@ -3,14 +3,30 @@ import 'dotenv/config'
 import mongoose from 'mongoose'
 import authRoute from "./src/routes/authRoute.js";
 import postRoute from "./src/routes/postRoute.js";
+import Pusher from "pusher";
+import chatRoute from "./src/routes/chatRoute.js";
+import * as bodyParser from "express";
 
 await connectDb()
 
 const app = express()
 app.use(express.json())
 
+// route
 app.use("/api/v1/auth", authRoute)
 app.use("/api/v1/post", postRoute)
+app.use("/api/v1/chat", chatRoute)
+app.use(bodyParser.urlencoded({
+    extended: true
+}));
+
+export const AppPusher = new Pusher({
+    appId: "1428876",
+    key: "e9552b7412e7557ff7ef",
+    secret: "e524302f3c596c748a1b",
+    cluster: "ap1",
+    useTLS: true
+})
 
 const PORT = process.env.PORT || 5000
 app.listen(PORT, () => {

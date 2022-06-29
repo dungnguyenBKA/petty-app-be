@@ -1,9 +1,9 @@
 import express from "express";
-import {authenticationMiddle} from "./authRoute.js";
 import createResponse from "../utils/BaseResponse.js";
 import {v4} from "uuid";
 import PostModel from "../models/PostModel.js";
 import {errorMessage} from "../utils/Const.js";
+import {authenticationMiddle} from "../middleware/authenticationMiddle.js";
 
 const router = express.Router()
 
