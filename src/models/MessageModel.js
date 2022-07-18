@@ -5,6 +5,7 @@ const {Schema} = mongoose;
 const messageSchema = new Schema({
   message: String,
   channel_id: String,
+  sender_id: String,
 }, {
   timestamps: true
 });

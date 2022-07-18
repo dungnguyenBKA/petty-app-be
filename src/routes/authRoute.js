@@ -15,21 +15,18 @@ import bcrypt from "bcrypt"
 import UserModel from "../models/UserModel.js";
 import {pickPropertyUser} from "../utils/utils.js";
 import {authenticationMiddle} from "../middleware/authenticationMiddle.js";
-import NovelModel from "../models/NovelModel.js";
-import PostModel from "../models/PostModel.js";
 
 const router = express.Router()
 
 async function createUser(username, password) {
   const hashPwd = await bcrypt.hash(password, 10)
   return {
-    id: v4(),
-    name: username,
+    username,
     pass: hashPwd
   }
 }
 
-router.get('/', authenticationMiddle, async (req, res) => {
+router.get('/', async (req, res) => {
   const users = await UserModel.find({})
   res.json(createResponse(successMessage, users?.map((item) => pickPropertyUser(item))))
 })
@@ -55,14 +52,13 @@ router.post('/login', async (req, res) => {
     return
   }
 
-  const query = await UserModel.find({
-    name: username
+  const user = await UserModel.findOne({
+    username: username
   })
 
-  if (query?.length === 1) {
-    const user = query[0]
+  if (user) {
     if (await bcrypt.compare(password, user.pass)) {
-      const token = jwt.sign(user.id, process.env.SECRET_KEY)
+      const token = jwt.sign(user.username, process.env.SECRET_KEY)
       res.json(createResponse(successMessage, {
         token,
         user: pickPropertyUser(user)
@@ -76,7 +72,7 @@ router.post('/login', async (req, res) => {
 })
 
 router.post('/register', async (req, res) => {
-  const {username, password, rePassword} = req.body
+  const {username, password, rePassword, avatar, description} = req.body
   if (!username || !password || !rePassword) {
     res.status(400).json(createResponse(eNotEnoughParametersMess))
     return
@@ -87,18 +83,20 @@ router.post('/register', async (req, res) => {
     return
   }
 
-  const usersDb = await UserModel.find({})
+  const usersConflictCount = await UserModel.count({
+    username: username
+  })
 
-  // check username unique
-  for (let i = 0; i < usersDb.length; i++) {
-    const user = usersDb[i];
-    if (user.name === username) {
-      res.status(400).json(createResponse(eNotUniqueName))
-      return
-    }
+  if(usersConflictCount > 0) {
+    res.status(400).json(createResponse(eNotUniqueName))
+    return
   }
 
-  const newUser = await createUser(username, password)
+  const newUser = {
+    ... await createUser(username, password),
+    avatar,
+    description
+  }
 
   UserModel.create(newUser, (err, _) => {
     if (err) {
@@ -107,7 +105,7 @@ router.post('/register', async (req, res) => {
       return
     }
 
-    const token = jwt.sign(newUser.id, process.env.SECRET_KEY)
+    const token = jwt.sign(newUser.username, process.env.SECRET_KEY)
     res.json(createResponse(successMessage, {
       token,
       user: pickPropertyUser(newUser)

@@ -13,62 +13,69 @@ const router = express.Router()
 router.post('/send_message', authenticationMiddle, async (req, res) => {
   // get params
   const {user} = req
+
+  if(!user._id) {
+    res.status(400).json(createResponse(errorMessage))
+    return
+  }
+
   const {receiverId, message} = req.body
   // validate receiver
-  const queryReceiver = await UserModel.find({
-    id: receiverId
+  const queryReceiverCount = await UserModel.count({
+    _id: receiverId
   })
 
-  if(queryReceiver?.length !== 1 || !queryReceiver) {
+  if(queryReceiverCount <= 0) {
     res.status(400).json(createResponse("Receiver not found"))
     return
   }
 
-  const receiver = queryReceiver[0]
-
   const queryChannels = await ChannelModel.find({
-    userIds : { $all: [user.id, receiverId] }
+    userIds : { $all: [user._id, receiverId] }
   })
 
   let channel
 
-
   if(queryChannels?.length === 0) {
     console.log("Create new chat room !")
-    channel = await ChannelModel.create({
-      userIds: [user.id, receiverId]
-    }, (error, result) => {
+    await ChannelModel.create({
+      userIds: [user._id, receiverId]
+    }, async (error, result) => {
       if(error) {
         console.error(error)
         res.status(400).json(createResponse(errorMessage))
       }
+
+      await sendMessageInChannel(res, message, result._id, user._id, receiverId)
     })
   } else {
     channel = queryChannels[0]
+    console.log("old room", {channel})
+    await sendMessageInChannel(res, message, channel._id, user._id, receiverId)
   }
+})
 
-  // add message to database
-
+async function sendMessageInChannel(res, message, channelID, senderId, receiverId) {
   await MessageModel.create({
     message,
-    channel_id: channel._id?.toString()
+    channel_id: channelID,
+    sender_id: senderId
   }, (error, _) => {
     if(error) {
       res.status(400).json(createResponse(errorMessage))
     }
   })
 
-  await AppPusher.trigger(`chat_channel_${channel._id?.toString()}`, "message_event", {
+  await AppPusher.trigger(`chat_channel_${channelID}`, "message_event", {
     message: message,
-    senderId: user.id,
+    senderId: senderId,
     receiverId,
   })
 
   res.json(createResponse(successMessage, {
     message,
   }))
-})
-
+}
 
 router.get('/channel_detail', authenticationMiddle, async (req, res) => {
   const {channel_id} = req.body
@@ -87,7 +94,7 @@ router.get('/channel_detail', authenticationMiddle, async (req, res) => {
 router.get('/list_channel', authenticationMiddle, async (req, res) => {
   const user = req.user
   const query = await ChannelModel.find({
-    userIds: user.id
+    userIds: user._id
   })
   res.json(createResponse(successMessage, query.map(item => pickPropertyChannel(item))))
 })

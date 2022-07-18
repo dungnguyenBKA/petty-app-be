@@ -2,7 +2,7 @@ import express from 'express'
 import 'dotenv/config'
 import mongoose from 'mongoose'
 import authRoute from "./src/routes/authRoute.js";
-import postRoute from "./src/routes/postRoute.js";
+import postRoute from "./src/routes/petRoute.js";
 import Pusher from "pusher";
 import chatRoute from "./src/routes/chatRoute.js";
 import * as bodyParser from "express";
@@ -14,7 +14,7 @@ app.use(express.json())
 
 // route
 app.use("/api/v1/auth", authRoute)
-app.use("/api/v1/post", postRoute)
+app.use("/api/v1/pets", postRoute)
 app.use("/api/v1/chat", chatRoute)
 app.use(bodyParser.urlencoded({
     extended: true

@@ -3,9 +3,11 @@ import mongoose from 'mongoose';
 const {Schema} = mongoose;
 
 const userSchema = new Schema({
-    id: String,
     name: String,
+    username: String,
     pass: String,
+    avatar: String,
+    description: String,
 }, {
     timestamps: true,
 });
