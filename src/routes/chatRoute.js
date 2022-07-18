@@ -71,9 +71,7 @@ router.post('/send_message', authenticationMiddle, async (req, res) => {
 
 
 router.get('/channel_detail', authenticationMiddle, async (req, res) => {
-  const {channel_id} = req
-
-  // validate user
+  const {channel_id} = req.body
 
   const queryMessages = await MessageModel.find(
     {
@@ -81,7 +79,9 @@ router.get('/channel_detail', authenticationMiddle, async (req, res) => {
     }
   )
 
-  res.json(createResponse(successMessage, queryMessages))
+  res.json(createResponse(successMessage, {
+    messages: queryMessages
+  }))
 })
 
 router.get('/list_channel', authenticationMiddle, async (req, res) => {

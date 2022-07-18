@@ -32,19 +32,6 @@ async function createUser(username, password) {
 router.get('/', authenticationMiddle, async (req, res) => {
   const users = await UserModel.find({})
   res.json(createResponse(successMessage, users?.map((item) => pickPropertyUser(item))))
-  // let { limit, page } = req.query
-  // const _limit = Number(parseInt(limit) || 10)
-  // const _page = Number(parseInt(page) || 0)
-  //
-  // const novels = await NovelModel.find({})
-  // const startPos = Number(_page*_limit)
-  // const pagingNovels = novels.slice(startPos, startPos+_limit)
-  // const isNextPage = pagingNovels.length === _limit
-  //
-  // res.json(createResponse("success", {
-  //   novels: pagingNovels,
-  //   nextPage: isNextPage ? _page+1 : undefined
-  // }))
 })
 
 router.get('/profile', authenticationMiddle, async (req, res) => {
