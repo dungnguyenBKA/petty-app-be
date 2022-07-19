@@ -11,16 +11,18 @@ export function authenticationMiddle(req, res, next) {
     jwt.verify(token, process.env.SECRET_KEY, async (err, username) => {
       if (err) {
         res.status(401).json(createResponse(errorUnAuthorizeMessage))
+        return
       }
+
       const user = await UserModel.findOne({
         username: username
       })
+
       if (user) {
         req.user = pickPropertyUser(JSON.parse(JSON.stringify(user)))
-
         next()
       } else {
-        res.status(401).json(createResponse(errorUnAuthorizeMessage))
+        return res.status(401).json(createResponse(errorUnAuthorizeMessage))
       }
     })
   } catch (e) {
