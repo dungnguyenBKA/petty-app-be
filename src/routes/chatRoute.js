@@ -88,7 +88,7 @@ router.get('/list_channel', authenticationMiddle, async (req, res) => {
   const user = req.user
   const query = await ChannelModel.find({
     userIds: user._id
-  }).lean()
+  }).sort({ createdAt: -1 }).lean()
 
   const channels = []
 
