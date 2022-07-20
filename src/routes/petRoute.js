@@ -3,6 +3,8 @@ import createResponse from "../utils/BaseResponse.js";
 import PetModel from "../models/PetModel.js";
 import {authenticationMiddle} from "../middleware/authenticationMiddle.js";
 import {errorMessage} from "../utils/Const.js";
+import UserModel from "../models/UserModel.js";
+import ChannelModel from "../models/ChannelModel.js";
 
 const router = express.Router()
 
@@ -25,20 +27,51 @@ router.get('/my', authenticationMiddle, async (req, res) => {
   res.json(createResponse("success", {pets}))
 })
 
+router.get('/detail', authenticationMiddle, async (req, res) => {
+  const {pet_id} = req.query
+  const {user} = req
+
+  const pet = await PetModel.findOne({
+    _id: pet_id
+  }).lean()
+
+  try {
+    const owner = await UserModel.findOne({
+      _id: pet.owner_id
+    }).lean()
+
+    if (owner._id.equals(user._id)) {
+      res.json(createResponse("success", {
+        ...pet, owner
+      }))
+      return
+    }
+
+    const channel = await ChannelModel.findOne({
+      userIds: {$all: [user._id.toString(), owner._id.toString()]}
+    }).lean()
+
+    res.json(createResponse("success", {
+      ...pet, owner: {
+        ...owner,
+        channel_id: channel?._id
+      }
+    }))
+  } catch (e) {
+    console.error(e)
+    res.json(createResponse("success", pet))
+  }
+})
+
 router.post('/create', authenticationMiddle, async (req, res) => {
   const {
-    name,
-    dob,
-    avatar,
-    description,
-    images,
+    name, dob, avatar, description, images,
   } = req.body
 
   const {user} = req
 
   const conflictCount = await PetModel.count({
-    owner_id: user._id,
-    name: name
+    owner_id: user._id, name: name
   })
 
   if (conflictCount > 0) {
@@ -47,12 +80,7 @@ router.post('/create', authenticationMiddle, async (req, res) => {
   }
 
   await PetModel.create({
-    name,
-    dob,
-    avatar,
-    description,
-    images,
-    owner_id: user._id
+    name, dob, avatar, description, images, owner_id: user._id
   }, (error, result) => {
     if (error) {
       res.status(400).json(createResponse(errorMessage))
@@ -65,18 +93,12 @@ router.post('/create', authenticationMiddle, async (req, res) => {
 
 router.post('/update', authenticationMiddle, async (req, res) => {
   const {
-    name,
-    dob,
-    avatar,
-    description,
-    images,
-    id
+    name, dob, avatar, description, images, id
   } = req.body
   const {user} = req
 
   const pet = await PetModel.findOne({
-    owner_id: user._id,
-    _id: id
+    owner_id: user._id, _id: id
   })
 
   if (!pet) {
@@ -88,8 +110,7 @@ router.post('/update', authenticationMiddle, async (req, res) => {
 
   try {
     PetModel.findOneAndUpdate({
-      owner_id: user._id,
-      _id: id
+      owner_id: user._id, _id: id
     }, {
       $set: {
         "name": name || pet.name,

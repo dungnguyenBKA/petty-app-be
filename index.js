@@ -37,6 +37,7 @@ async function connectDb() {
     try {
         const dbUserName = process.env.DB_USERNAME
         const dbPwd = process.env.DB_PWD
+        console.log("Connecting to database")
         await mongoose.connect(`mongodb+srv://${dbUserName}:${dbPwd}@learn-mern.aaq5u.mongodb.net/learn-mern?retryWrites=true&w=majority`)
         console.log("Connected to database")
     } catch (e) {

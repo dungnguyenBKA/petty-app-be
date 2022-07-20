@@ -108,7 +108,7 @@ router.post('/register', async (req, res) => {
     const token = jwt.sign(newUser.username, process.env.SECRET_KEY)
     res.json(createResponse(successMessage, {
       token,
-      user: pickPropertyUser(newUser)
+      user: pickPropertyUser(_)
     }))
   })
 })
