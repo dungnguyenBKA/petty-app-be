@@ -5,7 +5,7 @@ export function pickPropertyUser(user) {
 }
 
 export function pickPropertyChannel(channel) {
-  return _.pick(channel, "userIds", "id")
+  return _.omit(channel, ["__v"])
 }
 
 export function pickPropertyMessage(mess) {
